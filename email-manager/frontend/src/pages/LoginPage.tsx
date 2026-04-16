@@ -1,16 +1,26 @@
-import { useMsal } from '@azure/msal-react';
+import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../auth/msalConfig';
 import { Mail, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
   const { instance } = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/app/briefing', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async () => {
     setLoading(true);
     try {
       await instance.loginPopup(loginRequest);
+      navigate('/app/briefing', { replace: true });
     } catch (err) {
       console.error('Login error', err);
     } finally {
