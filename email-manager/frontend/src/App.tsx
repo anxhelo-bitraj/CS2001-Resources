@@ -1,4 +1,5 @@
-import { useIsAuthenticated } from '@azure/msal-react';
+import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { InteractionStatus } from '@azure/msal-browser';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useUiStore } from './store/uiStore';
@@ -15,6 +16,19 @@ import SettingsPage from './pages/SettingsPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useIsAuthenticated();
+  const { inProgress } = useMsal();
+
+  // While MSAL is initialising (startup, handling redirect/popup) do not
+  // redirect — the auth state is not yet settled and a premature redirect to
+  // /login would create a loop.
+  if (inProgress !== InteractionStatus.None) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }

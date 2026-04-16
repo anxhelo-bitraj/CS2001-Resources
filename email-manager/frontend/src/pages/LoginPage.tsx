@@ -1,20 +1,22 @@
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
+import { InteractionStatus } from '@azure/msal-browser';
 import { loginRequest } from '../auth/msalConfig';
 import { Mail, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
-  const { instance } = useMsal();
+  const { instance, inProgress } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only redirect once MSAL has finished initialising and we know auth state
+    if (inProgress === InteractionStatus.None && isAuthenticated) {
       navigate('/app/briefing', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, inProgress, navigate]);
 
   const handleLogin = async () => {
     setLoading(true);

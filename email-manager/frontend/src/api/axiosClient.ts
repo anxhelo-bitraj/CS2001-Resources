@@ -28,9 +28,10 @@ axiosClient.interceptors.request.use(async (config) => {
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      msalInstance.logoutPopup();
-    }
+    // Do not auto-logout on 401 — let individual pages/hooks handle auth errors.
+    // An auto-logout here caused a redirect loop: any failed API call would clear
+    // the MSAL session, making useIsAuthenticated() return false and bouncing the
+    // user back to /login even though they had a valid Microsoft session.
     return Promise.reject(error);
   }
 );
